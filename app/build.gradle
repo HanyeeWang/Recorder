@@ -1,0 +1,70 @@
+apply plugin: 'com.android.application'
+apply plugin: 'com.neenbedankt.android-apt'
+
+android {
+    compileSdkVersion 23
+    buildToolsVersion "22.0.1"
+    sourceSets {
+        packagingOptions {
+            exclude 'META-INF/LICENSE.txt'
+            exclude 'META-INF/NOTICE.txt'
+            pickFirst 'META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.properties'
+            pickFirst 'META-INF/maven/org.bytedeco.javacpp-presets/ffmpeg/pom.xml'
+            pickFirst 'META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.properties'
+            pickFirst 'META-INF/maven/org.bytedeco.javacpp-presets/opencv/pom.xml'
+        }
+
+        // Move the tests to tests/java, tests/res, etc...
+        instrumentTest.setRoot('tests')
+
+        // Move the build types to build-types/<type>
+        // For instance, build-types/debug/java, build-types/debug/AndroidManifest.xml, ...
+        // This moves them out of them default location under src/<type>/... which would
+        // conflict with src/ being used by the bjmfhj_instalment_main source set.
+        // Adding new build types or product flavors should be accompanied
+        // by a similar customization.
+        debug.setRoot('build-types/debug')
+        release.setRoot('build-types/release')
+    }
+    lintOptions {
+        abortOnError false
+    }
+    defaultConfig {
+        applicationId "com.hanyee.recorder"
+        minSdkVersion 15
+        targetSdkVersion 20
+        versionCode 1
+        versionName "1.0"
+    }
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(dir: 'libs', include: ['*.jar'])
+
+    apt "org.androidannotations:androidannotations:3.3+"
+    compile 'org.androidannotations:androidannotations-api:3.3+'
+
+    compile group: 'org.bytedeco', name: 'javacv', version: '1.1'
+    compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '3.0.0-1.1', classifier: 'android-arm'
+    compile group: 'org.bytedeco.javacpp-presets', name: 'ffmpeg', version: '2.8.1-1.1', classifier: 'android-arm'
+    compile group: 'org.bytedeco.javacpp-presets', name: 'opencv', version: '3.0.0-1.1', classifier: 'android-x86'
+    compile group: 'org.bytedeco.javacpp-presets', name: 'ffmpeg', version: '2.8.1-1.1', classifier: 'android-x86'
+
+    androidTestCompile('com.android.support.test.espresso:espresso-core:2.2.2', {
+        exclude group: 'com.android.support', module: 'support-annotations'
+    })
+    compile 'com.android.support:appcompat-v7:23.2.0'
+    testCompile 'junit:junit:4.12'
+}
+apt {
+    arguments {
+        androidManifestFile variant.outputs[0]?.processResources?.manifestFile
+        resourcePackageName "com.hanyee.recorder"
+    }
+}
